@@ -4,14 +4,13 @@
 
 This Apify actor extracts detailed ad information from LinkedIn's public Ad Library, delivering structured data about ad campaigns including creatives, headlines, advertiser details, impressions, targeting parameters, and more.
 
-
 ## 🎬 Video Tutorial
 
-[![Watch the Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-red?style=for-the-badge&logo=youtube)](https://youtube.com/@FlowExtractAPI)
-Watch a full demo: [YouTube – LinkedIn Ad Library Scraper Tutorial](https://www.youtube.com/watch?v=q5PGi7bmdXw)
+<a href="https://www.youtube.com/watch?v=q5PGi7bmdXw">
+  <img src="https://img.youtube.com/vi/q5PGi7bmdXw/maxresdefault.jpg" alt="LinkedIn Ad Library Scraper Tutorial" width="400">
+</a>
 
-
----
+Watch the full demo on YouTube: [LinkedIn Ad Library Scraper Tutorial](https://www.youtube.com/watch?v=q5PGi7bmdXw)
 
 ## Key Features
 
