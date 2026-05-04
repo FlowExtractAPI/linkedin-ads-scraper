@@ -8,8 +8,8 @@ This Apify actor extracts detailed ad information from LinkedIn's public Ad Libr
 ## 🎬 Video Tutorial
 
 [![Watch the Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-red?style=for-the-badge&logo=youtube)](https://youtube.com/@FlowExtractAPI)
+Watch a full demo: [YouTube – LinkedIn Ad Library Scraper Tutorial](https://www.youtube.com/watch?v=q5PGi7bmdXw)
 
-https://www.youtube.com/watch?v=q5PGi7bmdXw
 
 ---
 
