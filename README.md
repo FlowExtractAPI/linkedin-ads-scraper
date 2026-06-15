@@ -10,42 +10,93 @@ This Apify actor extracts detailed ad information from LinkedIn's public Ad Libr
   <img src="https://img.youtube.com/vi/q5PGi7bmdXw/maxresdefault.jpg" alt="LinkedIn Ad Library Scraper Tutorial" width="400">
 </a>
 
-Watch the full demo on YouTube: [LinkedIn Ad Library Scraper Tutorial](https://www.youtube.com/watch?v=q5PGi7bmdXw)
+---
 
 ## Key Features
 
-###  Comprehensive Ad Data Extraction
-- **Ad Creatives**  Images, videos (all quality variants), and carousel content
-- **Ad Copy**  Headlines, body text, descriptions, and full untruncated ad text
-- **Advertiser Information**  Company names, logos, bio/subtitle text, profile URLs
-- **Call-to-Action**  CTA button text and destination links
-- **External Links**  URLs mentioned in ad text
-- **Ad Detail Enrichment**  Optional deep-fetch of impressions, targeting, dates, payer info, and video URLs per ad
-- **Metadata**  Ad IDs, creative types, run dates, status (active/inactive), and timestamps
+### Comprehensive Ad Data Extraction
+- **Ad Creatives** — Images, videos (all quality variants), and carousel content
+- **Ad Copy** — Headlines, body text, descriptions, and full untruncated ad text
+- **Advertiser Information** — Company names, logos, bio/subtitle text, profile URLs
+- **Call-to-Action** — CTA button text and destination links
+- **External Links** — URLs mentioned in ad text
+- **Ad Detail Enrichment** — Optional deep-fetch of impressions, targeting, dates, payer info, and video URLs per ad
+- **Metadata** — Ad IDs, creative types, run dates, status (active/inactive), and timestamps
 
-###  Performance & Reliability
-- **Smart Pagination**  Automatically handles multi-page results with token tracking and stall detection
-- **Retry Logic**  Configurable exponential backoff for both search pages and ad detail pages
-- **Concurrent Detail Fetching**  Fetch multiple ad detail pages in parallel with configurable concurrency
-- **Rate Limit Handling**  Automatic detection and wait on HTTP 429 responses
-- **Proxy Support**  Optional Apify Proxy integration with residential proxy groups
+### Performance & Reliability
+- **Smart Pagination** — Automatically handles multi-page results across every search
+- **Automatic Retries** — Transient errors and rate limits are retried for you
+- **Concurrent Detail Fetching** — Enriches multiple ads in parallel
+- **Rate Limit Handling** — Automatic detection and back-off on HTTP 429 responses
 
 ### Two Search Modes
-- **URL Mode**  Paste LinkedIn Ad Library URLs directly (with all filters pre-applied)
-- **Filter Mode**  Search by keyword, account owner, payer, country, date range, impressions, targeting facets, and sort order
-
-### 🤝 ZIP Job Logic
-When providing multiple keywords, account owners, and payers, they are paired **by index position** (not cross-product). This gives you precise control over which combinations run.
+- **URL Mode** — Paste LinkedIn Ad Library URLs directly (with all filters pre-applied)
+- **Search Mode** — Build one or more searches, each with its own company, payer, keyword, country, date range, impressions, targeting, and sort order
 
 ---
 
-##  Quick Start
+## 🔍 How Searching Works
+
+The actor mirrors exactly how search works on **linkedin.com/ad-library**: you fill in the **Company or advertiser**, **Payer**, and/or **Keyword** fields, pick your **Country**, **Date**, and **More** filters, and run the search.
+
+This actor lets you queue **many of those searches at once**. There are two ways to provide them, and you can use either or both in a single run:
+
+1. **URLs** — paste any number of LinkedIn Ad Library URLs. Every filter already baked into the URL is respected.
+2. **Searches** — build searches from scratch in the input form. **Each search is fully independent and carries its own filters.**
+
+This is the key difference from a single global search: you can run *"apify, newest first, US"* and *"marketing, last 30 days, Germany, min 10k impressions"* **in the same run**, each with completely different settings.
+
+### Each search needs at least one identifier
+
+LinkedIn can't run a search with no search terms, so **every search must have at least one of: Company, Payer, or Keyword.** You can fill in just one, any two, or all three. A search with none of these is skipped automatically (the rest of your searches still run). All the other fields — country, date, impressions, targeting, sort — are optional refinements.
+
+---
+
+## 📊 Results & Cost
+
+`maxResults` sets the cap **per URL and per search** — not for the whole run.
+
+> **Worst-case total = (number of URLs + number of searches) × maxResults**
+
+**Example:** 2 URLs + 3 searches, with `maxResults = 11`:
+
+```
+(2 + 3) × 11 = 55 ads maximum
+```
+
+Set `maxResults` to `0` for unlimited results per URL/search.
+
+---
+
+## 🌐 Proxy & Reliability
+
+This Actor uses a tiered proxy strategy to deliver the best possible success rate.
+
+**Paying users** get our **premium dedicated proxy infrastructure** optimized specifically for LinkedIn Ad Library, with higher success rates, faster response times, and significantly fewer rate-limit interruptions on large scrapes.
+
+**Free users** run on the standard Apify Proxy network. It works well for small jobs and quick tests, but on larger or sustained scrapes you may see slower runs and occasional retries.
+
+If you're hitting limits on the free tier or running production workloads, **upgrading to a paid plan automatically activates the premium proxy** — no configuration required.
+
+| | Free | Paid |
+|---|---|---|
+| Proxy network | Apify Proxy | Premium dedicated infrastructure |
+| Rate-limit resilience | Standard | Enhanced |
+| Best for | Small scrapes, testing | Production workloads, large scrapes |
+
+> **Automatic failover:** If the premium proxy is ever unreachable, the Actor seamlessly falls back to Apify Proxy mid-run — your scrape never stops.
+
+---
+
+## 🚀 Quick Start
 
 ### Basic Keyword Search
 
 ```json
 {
-  "keyword": ["apify"],
+  "searches": [
+    { "keyword": "apify" }
+  ],
   "maxResults": 50
 }
 ```
@@ -61,139 +112,110 @@ When providing multiple keywords, account owners, and payers, they are paired **
 }
 ```
 
-### Advanced Configuration
+### Search by Company and Payer
 
 ```json
 {
-  "keyword": ["saas", "marketing automation"],
-  "accountOwner": ["Apify", "HubSpot"],
-  "payer": ["Apify Technologies s.r.o.", "HubSpot Inc."],
-  "countries": ["US", "GB", "CA"],
-  "dateOption": "last-30-days",
-  "sortOrder": "ASCENDING",
-  "fetchAdDetail": true,
-  "maxResults": 100,
-  "proxyConfiguration": {
-    "useApifyProxy": true,
-    "apifyProxyGroups": ["RESIDENTIAL"]
-  }
+  "searches": [
+    { "accountOwner": "Apify", "payer": "Apify Technologies s.r.o." }
+  ],
+  "maxResults": 30
 }
 ```
 
 ---
 
-## 🤝 How ZIP Job Logic Works
+## 🎯 Independent Searches in One Run
 
-The scraper pairs `keyword`, `accountOwner`, and `payer` arrays **by index position**, not as a cross-product. Each index creates one search job, and all shared filters (countries, date, impressions, targeting, sort order) are applied to every job.
-
-### Example 1: Simple Pairing
+Each entry in `searches` runs as its own search, with its own filters. Mix regions, dates, sort orders, and impression ranges freely:
 
 ```json
 {
-  "keyword": ["Keyword1", "", "Keyword3", ""],
-  "accountOwner": ["Company0", "Advertiser1", "Company3", "Advertiser4"],
-  "payer": ["Payer1", "Payer2", "", ""],
-  "maxResults": 11
+  "searches": [
+    {
+      "keyword": "web scraping",
+      "countries": ["US"],
+      "sortOrder": "DESCENDING"
+    },
+    {
+      "accountOwner": "HubSpot",
+      "countries": ["DE"],
+      "dateOption": "last-30-days",
+      "impressionsMinValue": 10,
+      "impressionsMinUnit": "thousand"
+    },
+    {
+      "keyword": "black friday",
+      "dateOption": "custom-date-range",
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-30"
+    }
+  ],
+  "fetchAdDetail": true,
+  "maxResults": 50
 }
 ```
 
-This creates **4 jobs** (paired by index):
+This runs **3 independent searches**:
+1. `web scraping` in the US, newest first
+2. `HubSpot` ads in Germany from the last 30 days with at least 10k impressions
+3. `black friday` ads during November 2025
 
-| Job | keyword | accountOwner | payer | maxResults |
-|-----|---------|-------------|-------|------------|
-| 1 | Keyword1 | Company0 | Payer1 | 11 |
-| 2 | *(empty)* | Advertiser1 | Payer2 | 11 |
-| 3 | Keyword3 | Company3 | *(empty)* | 11 |
-| 4 | *(empty)* | Advertiser4 | *(empty)* | 11 |
+**Total: 3 searches × 50 = 150 max results.**
 
-**Total expected results: 4 jobs × 11 = 44**
-
-Empty strings (`""`) are treated as "no filter" for that field in that job.
-
-### Example 2: Unequal Array Lengths
-
-```json
-{
-  "keyword": ["sony"],
-  "accountOwner": ["Company1", "Company2"],
-  "payer": ["Payer1"],
-  "maxResults": 10
-}
-```
-
-The number of jobs = `max(keyword.length, accountOwner.length, payer.length)` = **2 jobs**. Missing entries are treated as empty:
-
-| Job | keyword | accountOwner | payer |
-|-----|---------|-------------|-------|
-| 1 | sony | Company1 | Payer1 |
-| 2 | *(empty)* | Company2 | *(empty)* |
-
-### Example 3: URLs + Filters Combined
+### URLs + Searches Combined
 
 ```json
 {
   "urls": [
     { "url": "https://www.linkedin.com/ad-library/search?keyword=sony&countries=DZ" }
   ],
-  "keyword": ["apify"],
-  "payer": ["Apify Technologies s.r.o."],
+  "searches": [
+    { "keyword": "apify", "payer": "Apify Technologies s.r.o." }
+  ],
   "maxResults": 10
 }
 ```
 
-**Phase 1** runs 1 URL job (with full pagination, respecting maxResults).
-**Phase 2** runs 1 filter job (`keyword=apify + payer=Apify Technologies s.r.o.`).
+The URL runs as one job and the search runs as another, each independently paginated and capped at `maxResults`.
 
-**Total: 2 jobs × 10 = 20 max results.**
-
-### Example 4: Only One Field Provided
-
-```json
-{
-  "accountOwner": ["Company5"],
-  "maxResults": 9
-}
-```
-
-This creates **1 job**: `accountOwner=Company5`, keyword and payer are empty.
-
-**Total: 1 job × 9 = 9 max results.**
+**Total: (1 URL + 1 search) × 10 = 20 max results.**
 
 ---
 
 ## 📋 Input Configuration
 
-### Input Parameters
+### Top-Level Parameters
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| **Search by URL** | | | | |
-| `urls` | array | ❌ | - | LinkedIn Ad Library URLs (requestListSources) |
-| **Search by Filters** | | | | |
-| `keyword` | array | ❌ | - | Keywords to search (zipped with accountOwner/payer) |
-| `accountOwner` | array | ❌ | - | Advertiser account names (zipped) |
-| `payer` | array | ❌ | - | Who paid for the ad (zipped) |
+| `urls` | array | ❌ | - | LinkedIn Ad Library URLs. Only `linkedin.com/ad-library` URLs are accepted — other URLs are rejected before the run starts. |
+| `searches` | array | ❌ | - | One or more independent searches (see per-search fields below) |
+| `maxResults` | integer | ❌ | 10 | Max ads **per URL / per search** (0 = unlimited) |
+| `fetchAdDetail` | boolean | ❌ | false | Fetch the full ad detail page for each ad |
+
+### Per-Search Fields (inside each `searches` entry)
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `accountOwner` | string | ⚠️* | - | Company or advertiser name |
+| `payer` | string | ⚠️* | - | Entity that paid for the ad |
+| `keyword` | string | ⚠️* | - | Word or phrase to search |
 | `countries` | array | ❌ | All | Country codes (e.g., US, GB, DZ) |
-| `sortOrder` | string | ❌ | DESCENDING | Sort order: ASCENDING or DESCENDING |
-| **Date Range** | | | | |
-| `dateOption` | string | ❌ | - | Predefined date filter |
+| `sortOrder` | string | ❌ | DESCENDING | `ASCENDING` or `DESCENDING` |
+| `dateOption` | string | ❌ | - | Predefined date filter (see below) |
 | `startDate` | string | ❌ | - | Custom start date (YYYY-MM-DD) |
 | `endDate` | string | ❌ | - | Custom end date (YYYY-MM-DD) |
-| **Impressions & Targeting** | | | | |
 | `impressionsMinValue` | integer | ❌ | - | Minimum impressions value |
-| `impressionsMinUnit` | string | ❌ | - | Unit: none, thousand, or million |
+| `impressionsMinUnit` | string | ❌ | - | `none`, `thousand`, or `million` |
 | `impressionsMaxValue` | integer | ❌ | - | Maximum impressions value |
-| `impressionsMaxUnit` | string | ❌ | - | Unit: none, thousand, or million |
+| `impressionsMaxUnit` | string | ❌ | - | `none`, `thousand`, or `million` |
 | `includedTargetingFacetCategories` | array | ❌ | - | Targeting categories to include |
 | `excludedTargetingFacetCategories` | array | ❌ | - | Targeting categories to exclude |
-| **Run Settings** | | | | |
-| `maxResults` | integer | ❌ | 10 | Max ads per job (0 = unlimited) |
-| `fetchAdDetail` | boolean | ❌ | false | Fetch full ad detail page per ad |
-| `proxyConfiguration` | object | ❌ | - | Apify proxy settings |
+
+> **⚠️ \*At least one** of `accountOwner`, `payer`, or `keyword` is required **per search**. You may fill one, two, or all three.
 
 ### Impressions Units
-
-The `impressionsMinUnit` and `impressionsMaxUnit` fields support three values:
 
 | Value | Meaning | Example |
 |-------|---------|---------|
@@ -207,7 +229,7 @@ Available values for `includedTargetingFacetCategories` and `excludedTargetingFa
 
 `LANGUAGE`, `LOCATION`, `AUDIENCE`, `DEMOGRAPHIC`, `COMPANY`, `EDUCATION`, `JOB`, `INTERESTS_AND_TRAITS`
 
-A category can appear in both included and excluded arrays simultaneously  this corresponds to LinkedIn's "Both" filter option.
+A category can appear in both included and excluded arrays simultaneously — this corresponds to LinkedIn's "Both" filter option.
 
 ### Date Filter Options
 
@@ -377,26 +399,30 @@ Focus on ad creatives and content.
 
 ---
 
-## ⚙️ Advanced Configuration Examples
+## ⚙️ More Examples
 
 ### Full Filters with Impressions and Targeting
 
 ```json
 {
-  "keyword": ["sony"],
-  "countries": ["DZ"],
-  "impressionsMinValue": 5,
-  "impressionsMinUnit": "none",
-  "impressionsMaxValue": 123456789,
-  "impressionsMaxUnit": "none",
-  "includedTargetingFacetCategories": ["LANGUAGE", "AUDIENCE", "JOB"],
-  "excludedTargetingFacetCategories": ["LOCATION", "COMPANY"],
-  "sortOrder": "ASCENDING",
+  "searches": [
+    {
+      "keyword": "sony",
+      "countries": ["DZ"],
+      "impressionsMinValue": 5,
+      "impressionsMinUnit": "none",
+      "impressionsMaxValue": 123456789,
+      "impressionsMaxUnit": "none",
+      "includedTargetingFacetCategories": ["LANGUAGE", "AUDIENCE", "JOB"],
+      "excludedTargetingFacetCategories": ["LOCATION", "COMPANY"],
+      "sortOrder": "ASCENDING"
+    }
+  ],
   "maxResults": 50
 }
 ```
 
-### URL Mode with Detail Enrichment
+### Multiple URLs with Detail Enrichment
 
 ```json
 {
@@ -405,69 +431,60 @@ Focus on ad creatives and content.
     { "url": "https://www.linkedin.com/ad-library/search?accountOwner=nivide&payer=nivide" }
   ],
   "fetchAdDetail": true,
-  "maxResults": 20,
-  "proxyConfiguration": {
-    "useApifyProxy": true,
-    "apifyProxyGroups": ["RESIDENTIAL"]
-  }
+  "maxResults": 20
 }
 ```
 
-### Zipped Multi-Keyword Competitor Research
+### Competitor Research Across Regions
 
 ```json
 {
-  "keyword": ["web scraping", "data extraction", "automation"],
-  "accountOwner": ["ParseHub", "Octoparse", "Apify"],
-  "payer": ["", "", "Apify Technologies s.r.o."],
-  "countries": ["US", "GB", "CA"],
+  "searches": [
+    { "keyword": "web scraping", "accountOwner": "ParseHub", "countries": ["US"] },
+    { "keyword": "data extraction", "accountOwner": "Octoparse", "countries": ["GB"] },
+    { "keyword": "automation", "accountOwner": "Apify", "payer": "Apify Technologies s.r.o.", "countries": ["CA"] }
+  ],
   "dateOption": "last-30-days",
   "fetchAdDetail": true,
   "maxResults": 50
 }
 ```
 
-This creates 3 zipped jobs:
-1. keyword="web scraping" + account="ParseHub" + payer=*(none)*
-2. keyword="data extraction" + account="Octoparse" + payer=*(none)*
-3. keyword="automation" + account="Apify" + payer="Apify Technologies s.r.o."
+Three independent searches, each scoped to its own company and region. **Total: 3 × 50 = 150 max results.**
 
-Each with the same country, date, and detail settings. Total: 3 × 50 = 150 max results.
-
-### Seasonal Campaign Analysis
+### Seasonal Campaign Analysis (Unlimited)
 
 ```json
 {
-  "keyword": ["black friday", "holiday sale"],
-  "dateOption": "custom-date-range",
-  "startDate": "2025-11-01",
-  "endDate": "2025-11-30",
+  "searches": [
+    {
+      "keyword": "black friday",
+      "dateOption": "custom-date-range",
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-30"
+    }
+  ],
   "maxResults": 0
 }
 ```
 
 ---
 
-## 📈 Performance Metrics
+## 📈 Performance
 
-### Scraping Speed (without fetchAdDetail)
-- **Single Ad**  ~0.2 seconds
-- **Page (10 ads)**  ~2–3 seconds (including delay)
-- **100 Ads**  ~30–40 seconds
-- **1000 Ads**  ~5–7 minutes
+### Without fetchAdDetail
+- **Page (10 ads)** — a few seconds
+- **100 Ads** — well under a minute
+- **1000 Ads** — a few minutes
 
 ### With fetchAdDetail Enabled
-- **Per ad detail page**  ~0.5–1 second
-- **With concurrency 3**  ~3 ads per second per batch
-- **100 ads with detail**  ~2–4 minutes (depending on retry rate)
+Enabling detail enrichment fires one extra request per ad, so expect runs to take longer — typically a few minutes per 100 ads depending on retry rate.
 
 ### Resource Usage
-- **Memory**  256MB minimum, 512MB recommended
-- **CPU**  Low to moderate
-- **Network**  Moderate bandwidth (higher with fetchAdDetail)
+- **Memory** — 256MB minimum, 512MB recommended
+- **Network** — Moderate bandwidth (higher with fetchAdDetail)
 
 ---
-
 
 ## ⚠️ Important Notes
 
@@ -486,15 +503,13 @@ This actor extracts publicly available data from LinkedIn's Ad Library. Users mu
 - Data is extracted as-is from LinkedIn Ad Library
 - Ad availability may change between scraping sessions
 - Some fields may be null if not present in the ad
-- The `detail` object depends on the detail page structure  if LinkedIn changes it, fields may return null
+- The `detail` object depends on the detail page layout — if LinkedIn changes it, some fields may return null
 - Video URLs include all quality variants with bitrate info
 
-### Rate Limiting
+### Searches & Validation
 
-- Built-in configurable delays between pages (default 2s)
-- Retry logic with exponential backoff handles temporary failures
-- HTTP 429 responses trigger automatic wait (default 5s)
-- Proxy usage strongly recommended for large-scale operations or when fetchAdDetail is enabled
+- Only `linkedin.com/ad-library` URLs are accepted — other URLs are rejected before the run starts
+- Each search must include at least one of Company, Payer, or Keyword; searches missing all three are skipped automatically, and the rest of the run continues
 
 ---
 
