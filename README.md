@@ -1,134 +1,65 @@
-# 📢 LinkedIn Ad Library Scraper
+**[LinkedIn Ads Scraper](https://apify.com/dz_omar/linkedin-ads-scraper?fpr=smcx63)** extracts **ads from LinkedIn's public Ad Library** — **creatives, headlines, ad copy, advertisers, CTAs and, optionally, impressions by country, targeting, run dates, payer and video URLs**. Paste Ad Library URLs or build many independent searches in one run.
 
-**Extract comprehensive advertising data from LinkedIn's Ad Library with automatic pagination, advanced filtering, URL-based search, and optional ad detail enrichment.**
-
-This Apify actor extracts detailed ad information from LinkedIn's public Ad Library, delivering structured data about ad campaigns including creatives, headlines, advertiser details, impressions, targeting parameters, and more.
-
-
-## 🎬 Video Tutorial
-
-[![Watch the Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-red?style=for-the-badge&logo=youtube)](https://youtube.com/@FlowExtractAPI)
+Perfect for **marketers**, **competitive-intelligence teams** and **agencies** researching B2B ad campaigns.
 
 https://www.youtube.com/watch?v=q5PGi7bmdXw
 
----
+## What does LinkedIn Ads Scraper do?
 
-## Key Features
+- **Ad creatives** — images, videos (all quality variants) and carousel content.
+- **Ad copy** — headlines, body text and the full untruncated ad text.
+- **Advertisers** — company name, logo, bio/subtitle and profile URL.
+- **Call-to-action** — CTA button text and destination links, plus URLs mentioned in the ad text.
+- **Optional detail enrichment** — total impressions, impressions by country, targeting parameters, run dates, status, payer and video URLs.
+- **Many independent searches per run** — each with its own company, payer, keyword, country, dates, impressions, targeting and sort order.
 
-### Comprehensive Ad Data Extraction
-- **Ad Creatives** — Images, videos (all quality variants), and carousel content
-- **Ad Copy** — Headlines, body text, descriptions, and full untruncated ad text
-- **Advertiser Information** — Company names, logos, bio/subtitle text, profile URLs
-- **Call-to-Action** — CTA button text and destination links
-- **External Links** — URLs mentioned in ad text
-- **Ad Detail Enrichment** — Optional deep-fetch of impressions, targeting, dates, payer info, and video URLs per ad
-- **Metadata** — Ad IDs, creative types, run dates, status (active/inactive), and timestamps
+### What data can you extract from the LinkedIn Ad Library?
 
-### Performance & Reliability
-- **Smart Pagination** — Automatically handles multi-page results across every search
-- **Automatic Retries** — Transient errors and rate limits are retried for you
-- **Concurrent Detail Fetching** — Enriches multiple ads in parallel
-- **Rate Limit Handling** — Automatic detection and back-off on HTTP 429 responses
+| Field | Description |
+|-------|-------------|
+| `adId` | Unique LinkedIn ad identifier |
+| `advertiserName`, `advertiserBio`, `logoUrl` | Advertiser name, bio/subtitle and logo |
+| `isPromoted`, `creativeType` | Promoted flag; SPONSORED_STATUS_UPDATE, SPONSORED_VIDEO, … |
+| `headline`, `adText` | Headline and main body text (may be truncated) |
+| `imageUrl`, `ctaText`, `externalLinksInText` | Creative image, CTA text, URLs in the ad text |
+| `detailPageUrl`, `scrapedAt` | Ad detail page URL and scrape time |
+| `detail.adType`, `detail.adStatus` | "Video Ad", "Single Image Ad", …; ACTIVE / INACTIVE / UNKNOWN |
+| `detail.paidForBy`, `detail.advertiserProfileUrl` | Legal entity that paid; LinkedIn company page |
+| `detail.adStartDate`, `detail.adEndDate`, `detail.adRunDatesRaw` | When the ad ran |
+| `detail.totalImpressions`, `detail.impressionsByCountry` | Impression range and per-country share |
+| `detail.targetingLanguage`, `detail.targetingLocation`, `detail.targetingParameters` | Targeting text and inclusion/exclusion per category |
+| `detail.fullAdText`, `detail.headlineText`, `detail.destinationUrl`, `detail.ctaButtonText` | Full text, headline, destination with UTM params, CTA label |
+| `detail.videoUrls`, `detail.videoPosterUrl`, `detail.imageUrl`, `detail.advertiserLogoUrl` | Media |
 
-### Two Search Modes
-- **URL Mode** — Paste LinkedIn Ad Library URLs directly (with all filters pre-applied)
-- **Search Mode** — Build one or more searches, each with its own company, payer, keyword, country, date range, impressions, targeting, and sort order
+### Why use LinkedIn Ads Scraper on Apify?
 
----
+Running it on Apify gives you **API access**, **scheduling**, **monitoring**, **integrations** (Make, Zapier, n8n, webhooks) and **proxy rotation** without managing infrastructure.
 
-## 🔍 How Searching Works
+## How to scrape the LinkedIn Ad Library
 
-The actor mirrors exactly how search works on **linkedin.com/ad-library**: you fill in the **Company or advertiser**, **Payer**, and/or **Keyword** fields, pick your **Country**, **Date**, and **More** filters, and run the search.
+1. Open [LinkedIn Ads Scraper](https://apify.com/dz_omar/linkedin-ads-scraper?fpr=smcx63) in Apify Console.
+2. Paste LinkedIn Ad Library URLs into **URLs** (every filter in the URL is respected), and/or add **Searches**.
+3. Give each search at least one of **Company**, **Payer** or **Keyword**, then any country, date, impressions, targeting or sort filters.
+4. Set **Max results** per URL/search (start small: `10`) and turn on **Fetch ad detail** for impressions and targeting.
+5. Click **Start**, then download the results as JSON, CSV or Excel, or fetch them over the API.
 
-This actor lets you queue **many of those searches at once**. There are two ways to provide them, and you can use either or both in a single run:
+## How much does it cost to scrape LinkedIn ads?
 
-1. **URLs** — paste any number of LinkedIn Ad Library URLs. Every filter already baked into the URL is respected.
-2. **Searches** — build searches from scratch in the input form. **Each search is fully independent and carries its own filters.**
+You pay per ad saved plus a small start fee:
 
-This is the key difference from a single global search: you can run *"apify, newest first, US"* and *"marketing, last 30 days, Germany, min 10k impressions"* **in the same run**, each with completely different settings.
+| Event | FREE | BRONZE | SILVER | GOLD |
+|---|---|---|---|---|
+| Ad extracted | $0.0015 | $0.001 | $0.0008 | $0.00045 |
+| Actor start (per run) | $0.01 | $0.01 | $0.01 | $0.01 |
 
-### Each search needs at least one identifier
+- **1,000 ads** cost about **$1.50** on the FREE plan price and **$0.45** on GOLD (+ the start fee).
+- `maxResults` caps **each URL and each search**: worst-case total = (URLs + searches) × `maxResults`. For example 2 URLs + 3 searches at `maxResults: 11` is at most 55 ads. `0` = unlimited.
 
-LinkedIn can't run a search with no search terms, so **every search must have at least one of: Company, Payer, or Keyword.** You can fill in just one, any two, or all three. A search with none of these is skipped automatically (the rest of your searches still run). All the other fields — country, date, impressions, targeting, sort — are optional refinements.
+## Input and output examples
 
----
+### Input
 
-## 📊 Results & Cost
-
-`maxResults` sets the cap **per URL and per search** — not for the whole run.
-
-> **Worst-case total = (number of URLs + number of searches) × maxResults**
-
-**Example:** 2 URLs + 3 searches, with `maxResults = 11`:
-
-```
-(2 + 3) × 11 = 55 ads maximum
-```
-
-Set `maxResults` to `0` for unlimited results per URL/search.
-
----
-
-## 🌐 Proxy & Reliability
-
-This Actor uses a tiered proxy strategy to deliver the best possible success rate.
-
-**Paying users** get our **premium dedicated proxy infrastructure** optimized specifically for LinkedIn Ad Library, with higher success rates, faster response times, and significantly fewer rate-limit interruptions on large scrapes.
-
-**Free users** run on the standard Apify Proxy network. It works well for small jobs and quick tests, but on larger or sustained scrapes you may see slower runs and occasional retries.
-
-If you're hitting limits on the free tier or running production workloads, **upgrading to a paid plan automatically activates the premium proxy** — no configuration required.
-
-| | Free | Paid |
-|---|---|---|
-| Proxy network | Apify Proxy | Premium dedicated infrastructure |
-| Rate-limit resilience | Standard | Enhanced |
-| Best for | Small scrapes, testing | Production workloads, large scrapes |
-
-> **Automatic failover:** If the premium proxy is ever unreachable, the Actor seamlessly falls back to Apify Proxy mid-run — your scrape never stops.
-
----
-
-## 🚀 Quick Start
-
-### Basic Keyword Search
-
-```json
-{
-  "searches": [
-    { "keyword": "apify" }
-  ],
-  "maxResults": 50
-}
-```
-
-### Search by URL
-
-```json
-{
-  "urls": [
-    { "url": "https://www.linkedin.com/ad-library/search?keyword=sony&countries=DZ" }
-  ],
-  "maxResults": 20
-}
-```
-
-### Search by Company and Payer
-
-```json
-{
-  "searches": [
-    { "accountOwner": "Apify", "payer": "Apify Technologies s.r.o." }
-  ],
-  "maxResults": 30
-}
-```
-
----
-
-## 🎯 Independent Searches in One Run
-
-Each entry in `searches` runs as its own search, with its own filters. Mix regions, dates, sort orders, and impression ranges freely:
+Independent searches in one run — each with its own filters:
 
 ```json
 {
@@ -157,14 +88,7 @@ Each entry in `searches` runs as its own search, with its own filters. Mix regio
 }
 ```
 
-This runs **3 independent searches**:
-1. `web scraping` in the US, newest first
-2. `HubSpot` ads in Germany from the last 30 days with at least 10k impressions
-3. `black friday` ads during November 2025
-
-**Total: 3 searches × 50 = 150 max results.**
-
-### URLs + Searches Combined
+URLs and searches combined:
 
 ```json
 {
@@ -178,77 +102,29 @@ This runs **3 independent searches**:
 }
 ```
 
-The URL runs as one job and the search runs as another, each independently paginated and capped at `maxResults`.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `urls` | array | — | LinkedIn Ad Library URLs. Only `linkedin.com/ad-library` URLs are accepted |
+| `searches` | array | — | One or more independent searches (fields below) |
+| `maxResults` | integer | 10 | Max ads **per URL / per search** (0 = unlimited) |
+| `fetchAdDetail` | boolean | false | Fetch the full ad detail page for each ad |
 
-**Total: (1 URL + 1 search) × 10 = 20 max results.**
+| Per-search field | Type | Description |
+|-------|------|-------------|
+| `accountOwner` | string | Company or advertiser name ⚠️ |
+| `payer` | string | Entity that paid for the ad ⚠️ |
+| `keyword` | string | Word or phrase to search ⚠️ |
+| `countries` | array | Country codes (e.g. US, GB, DZ); default all |
+| `sortOrder` | string | `ASCENDING` or `DESCENDING` (default) |
+| `dateOption` | string | `last-30-days`, `current-month`, `current-year`, `last-year`, `custom-date-range` |
+| `startDate` / `endDate` | string | Custom range (YYYY-MM-DD); takes priority over `dateOption` |
+| `impressionsMinValue` / `impressionsMaxValue` | integer | Impression bounds |
+| `impressionsMinUnit` / `impressionsMaxUnit` | string | `none`, `thousand` (×1,000) or `million` (×1,000,000) |
+| `includedTargetingFacetCategories` / `excludedTargetingFacetCategories` | array | `LANGUAGE`, `LOCATION`, `AUDIENCE`, `DEMOGRAPHIC`, `COMPANY`, `EDUCATION`, `JOB`, `INTERESTS_AND_TRAITS` — a category in both lists means LinkedIn's "Both" |
 
----
+⚠️ Every search needs **at least one** of `accountOwner`, `payer` or `keyword`; a search with none is skipped and the others still run.
 
-## 📋 Input Configuration
-
-### Top-Level Parameters
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `urls` | array | ❌ | - | LinkedIn Ad Library URLs. Only `linkedin.com/ad-library` URLs are accepted — other URLs are rejected before the run starts. |
-| `searches` | array | ❌ | - | One or more independent searches (see per-search fields below) |
-| `maxResults` | integer | ❌ | 10 | Max ads **per URL / per search** (0 = unlimited) |
-| `fetchAdDetail` | boolean | ❌ | false | Fetch the full ad detail page for each ad |
-
-### Per-Search Fields (inside each `searches` entry)
-
-| Field | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `accountOwner` | string | ⚠️* | - | Company or advertiser name |
-| `payer` | string | ⚠️* | - | Entity that paid for the ad |
-| `keyword` | string | ⚠️* | - | Word or phrase to search |
-| `countries` | array | ❌ | All | Country codes (e.g., US, GB, DZ) |
-| `sortOrder` | string | ❌ | DESCENDING | `ASCENDING` or `DESCENDING` |
-| `dateOption` | string | ❌ | - | Predefined date filter (see below) |
-| `startDate` | string | ❌ | - | Custom start date (YYYY-MM-DD) |
-| `endDate` | string | ❌ | - | Custom end date (YYYY-MM-DD) |
-| `impressionsMinValue` | integer | ❌ | - | Minimum impressions value |
-| `impressionsMinUnit` | string | ❌ | - | `none`, `thousand`, or `million` |
-| `impressionsMaxValue` | integer | ❌ | - | Maximum impressions value |
-| `impressionsMaxUnit` | string | ❌ | - | `none`, `thousand`, or `million` |
-| `includedTargetingFacetCategories` | array | ❌ | - | Targeting categories to include |
-| `excludedTargetingFacetCategories` | array | ❌ | - | Targeting categories to exclude |
-
-> **⚠️ \*At least one** of `accountOwner`, `payer`, or `keyword` is required **per search**. You may fill one, two, or all three.
-
-### Impressions Units
-
-| Value | Meaning | Example |
-|-------|---------|---------|
-| `none` | Exact number (no multiplier) | `impressionsMinValue: 5, impressionsMinUnit: none` → min 5 impressions |
-| `thousand` | Multiply by 1,000 | `impressionsMinValue: 5, impressionsMinUnit: thousand` → min 5,000 impressions |
-| `million` | Multiply by 1,000,000 | `impressionsMaxValue: 2, impressionsMaxUnit: million` → max 2,000,000 impressions |
-
-### Targeting Facet Categories
-
-Available values for `includedTargetingFacetCategories` and `excludedTargetingFacetCategories`:
-
-`LANGUAGE`, `LOCATION`, `AUDIENCE`, `DEMOGRAPHIC`, `COMPANY`, `EDUCATION`, `JOB`, `INTERESTS_AND_TRAITS`
-
-A category can appear in both included and excluded arrays simultaneously — this corresponds to LinkedIn's "Both" filter option.
-
-### Date Filter Options
-
-| Value | Description |
-|-------|-------------|
-| `last-30-days` | Last 30 days |
-| `current-month` | Current month |
-| `current-year` | Current year |
-| `last-year` | Previous year |
-| `custom-date-range` | Custom range (requires startDate + endDate) |
-
-If `startDate` and `endDate` are both provided, they take priority over `dateOption`.
-
----
-
-## 📤 Output Structure
-
-### Standard Output (fetchAdDetail: false)
+### Output (standard)
 
 ```json
 {
@@ -268,28 +144,17 @@ If `startDate` and `endDate` are both provided, they take priority over `dateOpt
 }
 ```
 
-### Enriched Output (fetchAdDetail: true)
-
-When `fetchAdDetail` is enabled, each ad includes a `detail` object with deep data from the ad's detail page:
+### Output (with `fetchAdDetail: true`)
 
 ```json
 {
   "adId": "1230248844",
   "advertiserName": "Nivide",
-  "advertiserBio": "Promoted",
-  "isPromoted": true,
   "creativeType": "SPONSORED_STATUS_UPDATE",
   "headline": "Professionellt stöd kring digital annonsering och SEO",
-  "adText": "Är det dags för ett omtag kring företagets digitala annonsering eller SEO?...",
   "detailPageUrl": "https://www.linkedin.com/ad-library/detail/1230248844",
-  "imageUrl": "https://media.licdn.com/dms/image/...",
-  "logoUrl": "https://media.licdn.com/dms/image/...",
-  "ctaText": "View details",
-  "externalLinksInText": [],
-  "scrapedAt": "2026-03-21T20:21:24.677Z",
   "detail": {
     "adType": "Single Image Ad",
-    "advertiserName": "Nivide",
     "advertiserProfileUrl": "https://www.linkedin.com/company/5275721",
     "paidForBy": "Nivide AB",
     "adRunDatesRaw": "Ran from Mar 15, 2026 to Mar 21, 2026",
@@ -298,283 +163,90 @@ When `fetchAdDetail` is enabled, each ad includes a `detail` object with deep da
     "adStatus": "INACTIVE",
     "totalImpressions": "< 1k",
     "impressionsByCountry": [
-      {
-        "country": "Sweden",
-        "impressionPercent": "100%",
-        "progressValue": 100
-      }
+      { "country": "Sweden", "impressionPercent": "100%", "progressValue": 100 }
     ],
     "targetingLanguage": "Targeting includes svenska",
     "targetingLocation": "Targeting includes Sverige",
     "targetingParameters": [
-      { "category": "Audience", "hasInclusion": false, "hasExclusion": false, "targetingType": "NONE" },
-      { "category": "Demographic", "hasInclusion": false, "hasExclusion": false, "targetingType": "NONE" },
       { "category": "Company", "hasInclusion": true, "hasExclusion": true, "targetingType": "BOTH" },
-      { "category": "Education", "hasInclusion": false, "hasExclusion": false, "targetingType": "NONE" },
-      { "category": "Job", "hasInclusion": true, "hasExclusion": true, "targetingType": "BOTH" },
-      { "category": "Member Interests and Traits", "hasInclusion": false, "hasExclusion": false, "targetingType": "NONE" }
+      { "category": "Job", "hasInclusion": true, "hasExclusion": true, "targetingType": "BOTH" }
     ],
-    "creativeType": "SPONSORED_STATUS_UPDATE",
     "fullAdText": "Är det dags för ett omtag kring företagets digitala annonsering eller SEO?...",
-    "headlineText": "Professionellt stöd kring digital annonsering och SEO",
     "destinationUrl": "https://nivide.se?trk=ad_library_ad_preview_headline_content",
     "ctaButtonText": "Läs mer",
-    "advertiserLogoUrl": "https://media.licdn.com/dms/image/...",
-    "imageUrl": "https://media.licdn.com/dms/image/...",
     "videoUrls": [],
     "videoPosterUrl": null
   }
 }
 ```
 
-### Output Fields Reference
+### Dataset views
 
-#### Standard Fields (always present)
+| View | Fields |
+|------|--------|
+| 📢 **Overview** | Ad image, ID, advertiser, bio, creative type, headline, ad text, CTA, LinkedIn URL |
+| 📋 **Detailed** | All standard fields + detail fields (impressions, targeting, dates, video URLs) |
+| 🏢 **Advertisers** | Logo, company name, bio, ad ID, headline, creative type, URL |
+| 🎨 **Creative analysis** | Creative image, ID, advertiser, bio, type, headline, body text, CTA |
 
-| Field | Description |
-|-------|-------------|
-| `adId` | Unique LinkedIn ad identifier |
-| `advertiserName` | Company/advertiser name |
-| `advertiserBio` | Advertiser bio/subtitle text |
-| `isPromoted` | Whether ad is marked as promoted |
-| `creativeType` | Type: SPONSORED_STATUS_UPDATE, SPONSORED_VIDEO, etc. |
-| `headline` | Ad headline text |
-| `adText` | Main ad body text (may be truncated) |
-| `detailPageUrl` | LinkedIn URL to ad detail page |
-| `imageUrl` | Ad creative image URL |
-| `logoUrl` | Advertiser logo URL |
-| `ctaText` | Call-to-action text |
-| `externalLinksInText` | External URLs found in ad text |
-| `scrapedAt` | ISO 8601 timestamp |
+## Other Actors you might need
 
-#### Detail Fields (when fetchAdDetail: true)
+<!-- RECOMMENDED:START (generated by apify-actor-forge/tools/recommend.py; edits inside are overwritten) -->
 
-| Field | Description |
-|-------|-------------|
-| `detail.adType` | "Video Ad", "Single Image Ad", etc. |
-| `detail.advertiserName` | Advertiser name from detail page |
-| `detail.advertiserProfileUrl` | LinkedIn company page URL |
-| `detail.paidForBy` | Legal entity that paid for the ad |
-| `detail.adStartDate` | When the ad started running |
-| `detail.adEndDate` | When the ad stopped (null if still active) |
-| `detail.adStatus` | ACTIVE, INACTIVE, or UNKNOWN |
-| `detail.adRunDatesRaw` | Raw date string from the page |
-| `detail.totalImpressions` | Impression range string (e.g., "100k-150k") |
-| `detail.impressionsByCountry` | Array of { country, impressionPercent, progressValue } |
-| `detail.targetingLanguage` | Language targeting text |
-| `detail.targetingLocation` | Location targeting text |
-| `detail.targetingParameters` | Array of { category, hasInclusion, hasExclusion, targetingType } |
-| `detail.fullAdText` | Full untruncated ad text |
-| `detail.headlineText` | Headline from card |
-| `detail.destinationUrl` | Full destination URL with UTM params |
-| `detail.ctaButtonText` | CTA button label (e.g., "Learn more") |
-| `detail.videoUrls` | Array of { src, type, bitrate } for all quality variants |
-| `detail.videoPosterUrl` | Video thumbnail URL |
-| `detail.advertiserLogoUrl` | Logo image URL |
-| `detail.imageUrl` | Ad image URL |
-| `detail.creativeType` | Creative type from data attribute |
+| Actor | What it adds |
+|---|---|
+| **[LinkedIn Company Scraper](https://apify.com/dz_omar/linkedin-company-scraper?fpr=smcx63)** | LinkedIn company pages in bulk: industry, employee count, HQ, offices & recent posts |
+| **[Facebook Ads Scraper Pro](https://apify.com/dz_omar/facebook-ads-scraper-pro?fpr=smcx63)** | Extract Facebook Ad Library data: creatives, targeting & metrics. |
+| **[TikTok Ad Library Scraper](https://apify.com/dz_omar/tiktok-ad-library-scraper?fpr=smcx63)** | Creator Posts, Targeting & Reach |
+| **[LinkedIn Jobs Scraper](https://apify.com/dz_omar/linkedin-jobs-scraper?fpr=smcx63)** | LinkedIn job postings with salary ranges, applicant counts & the recruiter who posted |
+| **[Facebook Comment Scraper](https://apify.com/dz_omar/facebook-comment-scraper?fpr=smcx63)** | Comments & threaded replies from Facebook reels, videos, photos, posts & groups |
 
----
+<!-- RECOMMENDED:END -->
 
-## 📊 Pre-Configured Data Views
+## Frequently asked questions
 
-### 1. 📢 Overview
-Quick summary of all ads with essential information.
+### How does searching work?
 
-**Fields:** Ad image, ID, advertiser, bio, creative type, headline, ad text, CTA, LinkedIn URL
+Exactly like linkedin.com/ad-library: fill in **Company**, **Payer** and/or **Keyword**, pick **Country**, **Date** and **More** filters, and search. This Actor queues **many of those searches at once** — you can run "apify, newest first, US" and "marketing, last 30 days, Germany, min 10k impressions" in the same run.
 
-### 2. 📋 Detailed View
-Complete ad information including external links, timestamps, and enriched detail data.
+### Which proxy does it use?
 
-**Fields:** All standard fields + detail fields (impressions, targeting, dates, video URLs)
+Paying users get a dedicated proxy optimized for the LinkedIn Ad Library, with fewer rate-limit interruptions on large scrapes; other users run on Apify Proxy, which works well for small jobs. If the dedicated proxy is ever unreachable, the run falls back to Apify Proxy automatically.
 
-### 3. 🏢 Advertisers
-Ads grouped by advertiser/company.
+### How are errors and rate limits handled?
 
-**Fields:** Logo, company name, bio, ad ID, headline, creative type, URL
+Pagination is automatic across every search, transient errors are retried, and HTTP 429 responses trigger back-off. Detail pages are fetched several at a time.
 
-### 4. 🎨 Creative Analysis
-Focus on ad creatives and content.
+### Do I need a LinkedIn account?
 
-**Fields:** Creative image, ID, advertiser, bio, type, headline, body text, CTA
+No. The Ad Library is public — no login and no cookies.
+
+### Is it legal to scrape the LinkedIn Ad Library?
+
+The Ad Library is a public transparency tool and the Actor reads only what any visitor sees. Comply with LinkedIn's terms and applicable data-protection laws. This is not legal advice.
+
+### Can I use LinkedIn Ads Scraper in Make, Zapier, n8n or my own code?
+
+Yes — through Apify's integrations, or with the Apify API and client libraries.
+
+## Support
+
+- 🌐 **Website:** [flowextractapi.com](https://flowextractapi.com)
+- 📧 **Email:** [support@flowextractapi.com](mailto:support@flowextractapi.com)
+- 💬 **GitHub:** [FlowExtractAPI](https://github.com/FlowExtractAPI)
+- 💼 **LinkedIn:** [flowextract-api](https://www.linkedin.com/in/flowextract-api/)
+- 🐦 **X (Twitter):** [@FlowExtractAPI](https://x.com/FlowExtractAPI)
+- 📱 **Facebook:** [flowextractapi](https://www.facebook.com/flowextractapi)
+- 🎵 **TikTok:** [@flowextractapi](https://www.tiktok.com/@flowextractapi)
+
+## Legal & compliance
+
+- **Public data only** — the public LinkedIn Ad Library, no login, no cookies.
+- **Rate limiting** — modest request rates with back-off.
+- **Data protection** — no storage of personal information or unauthorized data collection.
+- **Commercial use** — suitable for business intelligence and research.
+- No affiliation with or endorsement by LinkedIn is implied.
 
 ---
 
-## ⚙️ More Examples
-
-### Full Filters with Impressions and Targeting
-
-```json
-{
-  "searches": [
-    {
-      "keyword": "sony",
-      "countries": ["DZ"],
-      "impressionsMinValue": 5,
-      "impressionsMinUnit": "none",
-      "impressionsMaxValue": 123456789,
-      "impressionsMaxUnit": "none",
-      "includedTargetingFacetCategories": ["LANGUAGE", "AUDIENCE", "JOB"],
-      "excludedTargetingFacetCategories": ["LOCATION", "COMPANY"],
-      "sortOrder": "ASCENDING"
-    }
-  ],
-  "maxResults": 50
-}
-```
-
-### Multiple URLs with Detail Enrichment
-
-```json
-{
-  "urls": [
-    { "url": "https://www.linkedin.com/ad-library/search?keyword=apify&countries=US%2CGB" },
-    { "url": "https://www.linkedin.com/ad-library/search?accountOwner=nivide&payer=nivide" }
-  ],
-  "fetchAdDetail": true,
-  "maxResults": 20
-}
-```
-
-### Competitor Research Across Regions
-
-```json
-{
-  "searches": [
-    { "keyword": "web scraping", "accountOwner": "ParseHub", "countries": ["US"] },
-    { "keyword": "data extraction", "accountOwner": "Octoparse", "countries": ["GB"] },
-    { "keyword": "automation", "accountOwner": "Apify", "payer": "Apify Technologies s.r.o.", "countries": ["CA"] }
-  ],
-  "dateOption": "last-30-days",
-  "fetchAdDetail": true,
-  "maxResults": 50
-}
-```
-
-Three independent searches, each scoped to its own company and region. **Total: 3 × 50 = 150 max results.**
-
-### Seasonal Campaign Analysis (Unlimited)
-
-```json
-{
-  "searches": [
-    {
-      "keyword": "black friday",
-      "dateOption": "custom-date-range",
-      "startDate": "2025-11-01",
-      "endDate": "2025-11-30"
-    }
-  ],
-  "maxResults": 0
-}
-```
-
----
-
-## 📈 Performance
-
-### Without fetchAdDetail
-- **Page (10 ads)** — a few seconds
-- **100 Ads** — well under a minute
-- **1000 Ads** — a few minutes
-
-### With fetchAdDetail Enabled
-Enabling detail enrichment fires one extra request per ad, so expect runs to take longer — typically a few minutes per 100 ads depending on retry rate.
-
-### Resource Usage
-- **Memory** — 256MB minimum, 512MB recommended
-- **Network** — Moderate bandwidth (higher with fetchAdDetail)
-
----
-
-## ⚠️ Important Notes
-
-### Legal Considerations
-
-This actor extracts publicly available data from LinkedIn's Ad Library. Users must:
-- Comply with LinkedIn's Terms of Service
-- Respect robots.txt directives
-- Follow applicable data protection laws (GDPR, CCPA, etc.)
-- Use data responsibly and ethically
-
-**The actor creator is not responsible for how users utilize the extracted data.**
-
-### Data Accuracy
-
-- Data is extracted as-is from LinkedIn Ad Library
-- Ad availability may change between scraping sessions
-- Some fields may be null if not present in the ad
-- The `detail` object depends on the detail page layout — if LinkedIn changes it, some fields may return null
-- Video URLs include all quality variants with bitrate info
-
-### Searches & Validation
-
-- Only `linkedin.com/ad-library` URLs are accepted — other URLs are rejected before the run starts
-- Each search must include at least one of Company, Payer, or Keyword; searches missing all three are skipped automatically, and the rest of the run continues
-
----
-
-## 💬 Support & Contact
-
-### Get Help
-
-- 🌐 **Website**: [flowextractapi.com](https://flowextractapi.com)
-- 📧 **Email**: [flowextractapi@outlook.com](mailto:flowextractapi@outlook.com)
-- 🙋 **Apify Profile**: [FlowExtract API](https://apify.com/dz_omar?fpr=smcx63)
-- 💬 **GitHub Issues**: [FlowExtractAPI](https://github.com/FlowExtractAPI)
-
-### Social Media
-
-- 💼 **LinkedIn**: [flowextract-api](https://www.linkedin.com/in/flowextract-api/)
-- 🐦 **Twitter**: [@FlowExtractAPI](https://x.com/FlowExtractAPI)
-- 📱 **Facebook**: [flowextractapi](https://www.facebook.com/flowextractapi)
-
-## 🌟 Related Actors by FlowExtract API
-
-### 🎬 Video & Media Tools
-
-**[YouTube Transcript & Metadata Extractor](https://apify.com/dz_omar/youtube-transcript-metadata?fpr=smcx63)**
-Extract complete video transcripts with timestamps and comprehensive metadata.
-
-**[YouTube Full Channel, Playlists, Shorts, Live](https://apify.com/dz_omar/Youtube-Scraper-Pro?fpr=smcx63)**
-Extract complete playlist information with all video details from any YouTube playlist.
-
-**[Zoom Scraper | 🎥 Downloader & 📄 Transcript](https://apify.com/dz_omar/zoom-scraper?fpr=smcx63)**
-Extract Zoom meeting recordings, transcripts, and metadata.
-
-**[Loom Scraper | 🎥 Downloader & 📄 Transcript](https://apify.com/dz_omar/loom-video-scraper?fpr=smcx63)**
-Download Loom videos and extract transcripts.
-
-### 🏠 Real Estate Data
-
-**[PropertyFinder Scraper](https://apify.com/dz_omar/propertyfinder-scraper?fpr=smcx63)**
-Extract real estate property listings from PropertyFinder across UAE, Saudi Arabia, Bahrain, Egypt, and Qatar.
-
-**[Idealista Scraper API](https://apify.com/dz_omar/idealista-scraper-api?fpr=smcx63)**
-Advanced Idealista property data extraction with API access.
-
-**[Idealista Scraper](https://apify.com/dz_omar/idealista-scraper?fpr=smcx63)**
-Extract Spanish real estate listings from Idealista.
-
-### 🛠️ Developer & Security Tools
-
-**[Screenshot](https://apify.com/dz_omar/screenshot?fpr=smcx63)**
-Fast, reliable webpage screenshots with customizable options.
-
-**[Ultimate Screenshot](https://apify.com/dz_omar/ultimate-screenshot?fpr=smcx63)**
-Advanced screenshot tool with full-page capture, custom viewports, and quality controls.
-
-**[Network Security Scanner](https://apify.com/dz_omar/network-security-scanner?fpr=smcx63)**
-Scan websites for security vulnerabilities and get comprehensive security reports.
-
-### 📱 Social Media Tools
-
-**[Facebook Ads Scraper Pro](https://apify.com/dz_omar/facebook-ads-scraper-pro?fpr=smcx63)**
-Extract Facebook ads data for competitor analysis and market research.
-
-**[AI Contact Intelligence Extractor](https://apify.com/dz_omar/ai-contact-intelligence?fpr=smcx63)**
-Extract emails, phones, contacts & custom data using AI.
-
----
-
-**Ready to extract LinkedIn ad data?** [Start using LinkedIn Ad Library Scraper now!](https://apify.com/dz_omar/linkedin-ads-scraper?fpr=smcx63)
+*LinkedIn Ads Scraper — by FlowExtract API. Turn any website into structured data.*
